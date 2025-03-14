@@ -1,0 +1,46 @@
+org 100h               ; Set starting address for the program (COM file format)
+
+.model small           ; Define the memory model as small
+.stack 100h            ; Define a stack of size 256 bytes
+
+.data                  ; Start of data segment
+    array db 10h, 20h, 30h, 10h, 50h, 10h, 0   ; Array with byte values, zero-terminated
+    target db 10h      ; The byte value we are searching for (0x10)
+    num_times dw 0     ; Variable to store the count of occurrences
+
+.code                  ; Start of code segment
+main:
+                       ; Program initialization
+    mov ax, @data      ; Initialize data segment
+    mov ds, ax
+
+                       ; Initialize pointers and counter
+    lea si, array      ; Load address of array into SI (source index register)
+    mov cx, 0          ; Clear the counter (num_times)
+
+check_byte:
+                       ; Load current byte from the array
+    mov al, [si]       ; Move the byte at [SI] into AL
+    cmp al, 0          ; Compare AL with 0 (end of array)
+    je done            ; If AL == 0 (end of array), jump to 'done'
+                      
+                       ; Compare current byte with target byte
+    cmp al, target     ; Compare AL with the target byte
+    jne next_byte      ; If not equal, jump to next byte
+
+                       ; If equal, increment num_times
+    inc cx             ; Increment the counter in CX register (num_times)
+
+next_byte:
+    inc si             ; Move to the next byte in the array
+    jmp check_byte     ; Repeat the loop
+
+done:
+                       ; Store the result (num_times) into the num_times variable
+    mov num_times, cx  ; Store the count (CX) into num_times
+
+                       ; Exit program (interrupt 21h)
+    mov ax, 4C00h      ; DOS interrupt to terminate the program
+    int 21h            ; Call DOS interrupt to terminate the program
+
+end main               ; End of program  
